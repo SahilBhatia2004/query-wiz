@@ -14,13 +14,23 @@ import {
   Download,
   Sparkles,
   ArrowRight,
-  Check
+  Check,
+  User,
+  LogOut
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("features");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   const features = [
     {
@@ -88,8 +98,23 @@ const Index = () => {
               <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
               <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
               <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">About</a>
-              <Button variant="outline" size="sm">Sign In</Button>
-              <Button variant="hero" size="sm">Get Started</Button>
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>{user.email}</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleSignOut} className="flex items-center gap-2">
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>Sign In</Button>
+                  <Button variant="hero" size="sm" onClick={() => setIsAuthModalOpen(true)}>Get Started</Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -267,16 +292,27 @@ const Index = () => {
             Join thousands of companies using AI-powered analytics to make better decisions
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="xl" className="group">
-              Start Free Trial
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            {user ? (
+              <Link to="/dashboard">
+                <Button variant="hero" size="xl" className="group">
+                  Go to Dashboard
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="hero" size="xl" className="group" onClick={() => setIsAuthModalOpen(true)}>
+                Start Free Trial
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            )}
             <Button variant="outline" size="xl">
               Schedule Demo
             </Button>
           </div>
         </div>
       </section>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
       {/* Footer */}
       <footer className="border-t bg-muted/50 py-12 px-4 sm:px-6 lg:px-8">
